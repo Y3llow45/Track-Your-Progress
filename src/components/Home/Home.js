@@ -1,5 +1,5 @@
 import { select, selectAll } from 'd3-selection';
-import { timeDays, timeWeek, timeYear, timeMonths, timeFormat } from 'd3-time';
+import { timeDays, timeWeek, timeYear, timeMonths } from 'd3-time';
 import React, { useEffect } from 'react';
 
 const Home = () => {
@@ -30,7 +30,7 @@ const Home = () => {
         .data(timeMonths(new Date(2024, 0, 1), new Date(2024, 11, 31)))
         .enter()
         .append("text")
-        .text(d => timeFormat("%B")(d))
+        .text(d => d.toLocaleDateString('en-US', { month: 'long' }))
         .attr("x", d => timeWeek.count(timeYear(d), d) * cellSize)
         .attr("y", -5)
         .attr("class", "month");
