@@ -1,10 +1,10 @@
-import { select, selectAll } from 'd3-selection';
+import { select } from 'd3-selection';
 import { timeDays, timeWeek, timeYear, timeMonths } from 'd3-time';
 import React, { useEffect } from 'react';
 
 const Home = () => {
-  const width = 1000;
-  const height = 800;
+  const width = 1200; // Increased width to accommodate all weeks
+  const height = 900; // Adjusted height to fit all weeks and months
   const cellSize = 20;
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -24,6 +24,21 @@ const Home = () => {
       '#1f78b4', '#b2df8a'
     ];
 
+    const monthPositions = {
+      January: 6,
+      February: 10,
+      March: 14.5,
+      April: 19.3,
+      May: 23,
+      June: 27.4,
+      July: 32.1,
+      August: 36.2,
+      September: 40.3,
+      October: 45.2,
+      November: 49.2,
+      December: 53.2
+    };
+
     function renderCalendar(data) {
       // Add day labels
       svg.selectAll(".dayLabel")
@@ -31,8 +46,8 @@ const Home = () => {
         .enter()
         .append("text")
         .text(d => d)
-        .attr("x", 0)
-        .attr("y", (d, i) => (i + 1) * cellSize)
+        .attr("x", 30)
+        .attr("y", (d, i) => (i + 1) * cellSize + (cellSize + 1.1) * 3) // Adjusted position
         .attr("dy", "-0.5em")
         .attr("class", "dayLabel");
 
@@ -42,37 +57,25 @@ const Home = () => {
         .enter()
         .append("text")
         .text(d => d.toLocaleDateString('en-US', { month: 'short' }))
-        .attr("x", (d, i) => (i + 1) * cellSize * 4 + cellSize * 3) // Adjusted position
-        .attr("y", cellSize) // Moved down
+        .attr("x", d => monthPositions[d.toLocaleDateString('en-US', { month: 'long' })] * cellSize) // Manually positioned
+        .attr("y", cellSize * 2) // Adjusted position
         .attr("class", "monthLabel");
 
       // Render the calendar squares
-      const squares = svg.selectAll(".day")
+      svg.selectAll(".day")
         .data(data)
         .enter()
         .append("rect")
         .attr("class", "day")
         .attr("width", cellSize)
         .attr("height", cellSize)
-        .attr("x", d => (timeWeek.count(timeYear(d), d) % 53) * cellSize + cellSize * 3)
-        .attr("y", d => d.getDay() * cellSize + cellSize * 2) // Adjusted position
+        .attr("x", d => (timeWeek.count(timeYear(d), d) % 53) * cellSize + cellSize * 4)
+        .attr("y", d => d.getDay() * cellSize + cellSize * 3) // Adjusted position
         .attr("fill", d => monthColors[d.getMonth()])
         .attr("stroke", "white");
-
     }
 
     renderCalendar(yearData);
-
-    select("body")
-      .append("button")
-      .text("Switch to Single Months")
-      .on("click", function () {
-        svg.selectAll("*").remove();
-        for (let i = 0; i < 12; i++) {
-          const monthData = timeDays(new Date(2024, i, 1), new Date(2024, i + 1, 0));
-          renderCalendar(monthData);
-        }
-      });
 
     return () => {
       svg.remove(); // Clean up SVG when component unmounts
