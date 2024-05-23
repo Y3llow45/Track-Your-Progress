@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { select } from 'd3-selection';
 import { timeDays, timeWeek, timeYear } from 'd3-time';
-import { format } from 'd3-format';
 
 const Home = () => {
   const [activities, setActivities] = useState([]);
@@ -9,8 +8,8 @@ const Home = () => {
   const [activityName, setActivityName] = useState('');
   const [activityColor, setActivityColor] = useState('#000000');
 
-  const width = 800;
-  const height = 600;
+  const width = 1200;
+  const height = 900;
   const cellSize = 20;
   const yearData = timeDays(new Date(2024, 0, 1), new Date(2024, 11, 31));
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -50,7 +49,7 @@ const Home = () => {
       .enter()
       .append("text")
       .text(d => d)
-      .attr("x", (d, i) => i * cellSize * 4 + cellSize * 4)
+      .attr("x", (d, i) => i * cellSize * 4.4 + cellSize * 4 + 20)
       .attr("y", cellSize * 2)
       .attr("class", "monthLabel");
 
