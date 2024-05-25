@@ -7,6 +7,7 @@ const Home = () => {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [activityName, setActivityName] = useState('');
   const [activityColor, setActivityColor] = useState('#000000');
+  const [calendarData, setCalendarData] = useState({});
 
   const width = 1200;
   const height = 900;
@@ -27,12 +28,11 @@ const Home = () => {
     return () => {
       svg.remove();
     };
-  }, [activities, selectedActivity]);
+  }, [calendarData, selectedActivity]);
 
   function renderCalendar(data, svg) {
     svg.selectAll("*").remove();
 
-    // Add day labels
     svg.selectAll(".dayLabel")
       .data(daysOfWeek)
       .enter()
@@ -43,7 +43,6 @@ const Home = () => {
       .attr("dy", "-0.5em")
       .attr("class", "dayLabel");
 
-    // Add month labels
     svg.selectAll(".monthLabel")
       .data(monthLabels)
       .enter()
@@ -53,7 +52,6 @@ const Home = () => {
       .attr("y", cellSize * 2)
       .attr("class", "monthLabel");
 
-    // Render the calendar squares
     svg.selectAll(".day")
       .data(data)
       .enter()
@@ -63,11 +61,15 @@ const Home = () => {
       .attr("height", cellSize)
       .attr("x", d => (timeWeek.count(timeYear(d), d) % 53) * cellSize + cellSize * 4)
       .attr("y", d => d.getDay() * cellSize + cellSize * 3)
-      .attr("fill", "lightgray")
+      .attr("fill", d => calendarData[d.toISOString().split('T')[0]] ? calendarData[d.toISOString().split('T')[0]].color : 'lightgray')
       .attr("stroke", "white")
       .on("click", function (event, d) {
         if (selectedActivity) {
-          select(this).attr("fill", selectedActivity.color);
+          const dateStr = d.toISOString().split('T')[0];
+          setCalendarData(prevState => ({
+            ...prevState,
+            [dateStr]: selectedActivity
+          }));
         }
       });
   }
