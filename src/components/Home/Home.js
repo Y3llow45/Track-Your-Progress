@@ -3,16 +3,18 @@ import { select } from 'd3-selection';
 import { timeDays, timeWeek, timeYear } from 'd3-time';
 
 const Home = () => {
+  const currentYear = new Date().getFullYear();
   const [activities, setActivities] = useState([]);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [activityName, setActivityName] = useState('');
   const [activityColor, setActivityColor] = useState('#000000');
-  const [calendarData, setCalendarData] = useState({});
+  const [years, setYears] = useState([{ year: currentYear, data: {} }]);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
 
   const width = 1200;
-  const height = 900;
+  const height = 300;
   const cellSize = 20;
-  const yearData = timeDays(new Date(2024, 0, 1), new Date(2024, 11, 31));
+  const yearData = timeDays(new Date(selectedYear, 0, 1), new Date(selectedYear, 11, 31));
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -28,7 +30,7 @@ const Home = () => {
     return () => {
       svg.remove();
     };
-  }, [calendarData, selectedActivity]);
+  }, [years, selectedYear, selectedActivity]);
 
   function renderCalendar(data, svg) {
     svg.selectAll("*").remove();
@@ -52,6 +54,9 @@ const Home = () => {
       .attr("y", cellSize * 2)
       .attr("class", "monthLabel");
 
+    const yearObj = years.find(y => y.year === selectedYear);
+    const yearData = yearObj ? yearObj.data : {};
+
     svg.selectAll(".day")
       .data(data)
       .enter()
@@ -61,15 +66,24 @@ const Home = () => {
       .attr("height", cellSize)
       .attr("x", d => (timeWeek.count(timeYear(d), d) % 53) * cellSize + cellSize * 4)
       .attr("y", d => d.getDay() * cellSize + cellSize * 3)
-      .attr("fill", d => calendarData[d.toISOString().split('T')[0]] ? calendarData[d.toISOString().split('T')[0]].color : 'lightgray')
+      .attr("fill", d => yearData[d.toISOString().split('T')[0]] ? yearData[d.toISOString().split('T')[0]].color : 'lightgray')
       .attr("stroke", "white")
       .on("click", function (event, d) {
         if (selectedActivity) {
           const dateStr = d.toISOString().split('T')[0];
-          setCalendarData(prevState => ({
-            ...prevState,
-            [dateStr]: selectedActivity
-          }));
+          const newYears = years.map(year => {
+            if (year.year === selectedYear) {
+              return {
+                ...year,
+                data: {
+                  ...year.data,
+                  [dateStr]: selectedActivity
+                }
+              };
+            }
+            return year;
+          });
+          setYears(newYears);
         }
       });
   }
@@ -78,6 +92,17 @@ const Home = () => {
     setActivities([...activities, { name: activityName, color: activityColor }]);
     setActivityName('');
     setActivityColor('#000000');
+  }
+
+  function handleAddYear() {
+    const year = parseInt(document.getElementById('yearInput').value);
+    if (!years.some(y => y.year === year)) {
+      setYears([...years, { year, data: {} }]);
+    }
+  }
+
+  function handleYearSelect(year) {
+    setSelectedYear(year);
   }
 
   return (
@@ -109,6 +134,21 @@ const Home = () => {
         </ul>
       </div>
       <div id="calendar"></div>
+      <div>
+        <input type="number" id="yearInput" placeholder="Enter year" />
+        <button onClick={handleAddYear}>Add Year</button>
+      </div>
+      <div>
+        <h2>Years</h2>
+        <ul>
+          {years.map((year, index) => (
+            <li key={index} style={{ cursor: 'pointer' }}
+              onClick={() => handleYearSelect(year.year)}>
+              {year.year}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
